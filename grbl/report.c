@@ -201,6 +201,7 @@ void report_grbl_settings() {
   report_util_float_setting(25,settings.homing_seek_rate,N_DECIMAL_SETTINGVALUE);
   report_util_uint8_setting(26,settings.homing_debounce_delay);
   report_util_float_setting(27,settings.homing_pulloff,N_DECIMAL_SETTINGVALUE);
+  report_util_float_setting(28,settings.distance,N_DECIMAL_SETTINGVALUE);
   report_util_float_setting(30,settings.rpm_max,N_DECIMAL_RPMVALUE);
   report_util_float_setting(31,settings.rpm_min,N_DECIMAL_RPMVALUE);
   #ifdef VARIABLE_SPINDLE
@@ -510,6 +511,7 @@ void report_realtime_status()
   if (bit_isfalse(settings.status_report_mask,BITFLAG_RT_STATUS_POSITION_TYPE) ||
       (sys.report_wco_counter == 0) ) {
     for (idx=0; idx< N_AXIS; idx++) {
+      printFloat_CoordValue(gc_state.position[idx]);
       // Apply work coordinate offsets and tool length offset to current position.
       wco[idx] = gc_state.coord_system[idx]+gc_state.coord_offset[idx];
       if (idx == TOOL_LENGTH_OFFSET_AXIS) { wco[idx] += gc_state.tool_length_offset; }

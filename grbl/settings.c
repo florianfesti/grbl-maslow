@@ -215,6 +215,7 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
             break;
           case 2: settings.acceleration[parameter] = value*60*60; break; // Convert to mm/min^2 for grbl internal use.
           case 3: settings.max_travel[parameter] = -value; break;  // Store as negative for grbl internal use.
+
         }
         break; // Exit while-loop after setting has been configured and proceed to the EEPROM write call.
       } else {
@@ -284,6 +285,8 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
       case 25: settings.homing_seek_rate = value; break;
       case 26: settings.homing_debounce_delay = int_value; break;
       case 27: settings.homing_pulloff = value; break;
+      case 28: settings.distance = value; break;
+
       case 30: settings.rpm_max = value; spindle_init(); break; // Re-initialize spindle rpm calibration
       case 31: settings.rpm_min = value; spindle_init(); break; // Re-initialize spindle rpm calibration
       case 32:
