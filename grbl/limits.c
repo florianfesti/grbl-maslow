@@ -155,7 +155,7 @@ uint8_t limits_get_state()
 // NOTE: Only the abort realtime command can interrupt this process.
 // TODO: Move limit pin-specific calls to a general function for portability.
 
-#ifndef POLAR
+#ifndef XXX_POLAR
 
 void limits_go_home(uint8_t cycle_mask) 
 {
@@ -294,7 +294,7 @@ void limits_go_home(uint8_t cycle_mask)
 	  return;
 	} else {
 	  // Pull-off motion complete. Disable CYCLE_STOP from executing.
-          bit_false_atomic(sys_rt_exec_state,EXEC_CYCLE_STOP);
+          system_set_exec_state_flag(EXEC_CYCLE_STOP);
 	  break;
 	} 
       }
@@ -367,7 +367,7 @@ void limits_go_home(uint8_t cycle_mask)
   if (sys.abort) { return; } // Block if system reset has been issued.
   // Initialize
   uint8_t n_cycle = 1;
-  uint8_t step_pin[AXIS_HOMING];
+  uint8_t step_pin[N_AXIS];
   float target[N_AXIS];
   target[Z_AXIS]=0.0;
   float max_travel = 0.0;
@@ -375,7 +375,7 @@ void limits_go_home(uint8_t cycle_mask)
   uint8_t idx;
   uint8_t current_axis=X_AXIS;
   uint8_t opposite_axis=Y_AXIS;
-  for (idx=0; idx<AXIS_HOMING; idx++) {
+  for (idx=0; idx<N_AXIS; idx++) {
   // Initialize step pin masks
     if ((idx==X_AXIS)||(idx==Y_AXIS)){ step_pin[idx] = (get_step_pin_mask(X_AXIS)|get_step_pin_mask(Y_AXIS));}
 
@@ -431,7 +431,7 @@ void limits_go_home(uint8_t cycle_mask)
       if (approach) {
       // Check limit state. Lock out cycle axes when they change.
       limit_state = limits_get_state();
-      for (idx=0; idx<AXIS_HOMING; idx++) {
+      for (idx=0; idx<N_AXIS; idx++) {
 	if (axislock & step_pin[idx]) {
 	  if (limit_state & (1 << idx)) { axislock &= ~(step_pin[idx]); }
 	}
@@ -453,7 +453,7 @@ void limits_go_home(uint8_t cycle_mask)
 		  return;
 	} else {
 		  // Pull-off motion complete. Disable CYCLE_STOP from executing.
-          bit_false_atomic(sys_rt_exec_state,EXEC_CYCLE_STOP);
+	  system_set_exec_state_flag(EXEC_CYCLE_STOP);
 	  break;
 	}
       }
