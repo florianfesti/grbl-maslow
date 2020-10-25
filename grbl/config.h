@@ -51,7 +51,7 @@
 
 //Spindle is controled by a servo.Use the PIN D11 to drive the servo. Use the commands M03 Sxxx (xxx between 0 and 255)
 //to rotate the servo between 0-180. The command M05 turn the servo to zero degrees.
-#define RC_SERVO
+//#define RC_SERVO
 
 // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
 //#define DEFAULTS_GENERIC
