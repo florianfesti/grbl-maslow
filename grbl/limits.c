@@ -78,18 +78,12 @@ uint8_t limits_get_state()
 {
   uint8_t limit_state = 0;
   uint8_t pin = (LIMIT_PIN & LIMIT_MASK);
-  #ifdef INVERT_LIMIT_PIN_MASK
-    pin ^= INVERT_LIMIT_PIN_MASK;
-  #endif
   if (bit_isfalse(settings.flags,BITFLAG_INVERT_LIMIT_PINS)) { pin ^= LIMIT_MASK; }
   if (pin) {
     uint8_t idx;
     for (idx=0; idx<N_AXIS; idx++) {
       if (pin & get_limit_pin_mask(idx)) { limit_state |= (1 << idx); }
     }
-    #ifdef ENABLE_DUAL_AXIS
-      if (pin & (1<<DUAL_LIMIT_BIT)) { limit_state |= (1 << N_AXIS); }
-    #endif
   }
   return(limit_state);
 }
