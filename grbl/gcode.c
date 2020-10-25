@@ -1053,7 +1053,7 @@ uint8_t gc_execute_line(char *line)
 #ifndef SEGMENTED_LINES
 	  mc_line(gc_block.values.xyz, pl_data);
 #else
-	  mc_segmented_line(gc_state.position,gc_block.values.xyz, gc_state.feed_rate, gc_state.modal.feed_rate);
+	  mc_segmented_line(gc_state.position, gc_block.values.xyz, pl_data);
 #endif
       } else if (gc_state.modal.motion == MOTION_MODE_SEEK) {
         pl_data->condition |= PL_COND_FLAG_RAPID_MOTION; // Set rapid motion condition flag.

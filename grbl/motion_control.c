@@ -93,22 +93,20 @@ void mc_line(float *target, plan_line_data_t *pl_data)
 
 //Segment straight lines to ensure linear movement when the coordinates system is changed
 #ifdef SEGMENTED_LINES
-#ifdef USE_LINE_NUMBERS
-  void mc_segmented_line(float *position, float *target, float feed_rate, uint8_t invert_feed_rate, int32_t line_number)
-#else
-  void mc_segmented_line(float *position, float *target, float feed_rate, uint8_t invert_feed_rate)
-#endif
+void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data)
 {
   float mm_per_line_segment=2;  //TODO: move to settings
   float mm_of_travel = hypot(target[X_AXIS] - position[X_AXIS],
 		  target[Y_AXIS] - position[Y_AXIS]);
   if (mm_of_travel < 0.001)  return;
-  uint16_t segments = floor(mm_of_travel / mm_per_line_segment);
+  uint16_t segments = floor(mm_of_travel / mm_per_line_segment) + 1;
   if (segments) {
       // Multiply inverse feed_rate to compensate for the fact that this movement is approximated
       // by a number of discrete segments. The inverse feed_rate should be correct for the sum of
       // all segments.
-      if (invert_feed_rate) { feed_rate *= segments; }
+      if (pl_data->condition & PL_COND_FLAG_INVERSE_TIME) {
+	  pl_data->feed_rate *= segments;
+      }
 
       float linear_per_segmentX = (target[X_AXIS] - position[X_AXIS])/segments;
       float linear_per_segmentY = (target[Y_AXIS] - position[Y_AXIS])/segments;
@@ -118,11 +116,7 @@ void mc_line(float *target, plan_line_data_t *pl_data)
 		// Update arc_target location
 		position[X_AXIS] += linear_per_segmentX;
 		position[Y_AXIS] += linear_per_segmentY;
-		#ifdef USE_LINE_NUMBERS
-		  mc_line(position, feed_rate, invert_feed_rate, line_number);
-		#else
-		  mc_line(position, feed_rate, invert_feed_rate);
-		#endif
+		mc_line(position, pl_data);
 		// Bail mid-circle on system abort. Runtime command check already performed by mc_line.
 		if (sys.abort) { return; }
 	  }
