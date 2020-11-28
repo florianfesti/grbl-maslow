@@ -155,11 +155,19 @@ uint8_t limits_get_state()
 // NOTE: Only the abort realtime command can interrupt this process.
 // TODO: Move limit pin-specific calls to a general function for portability.
 
-#ifndef XXX_POLAR
-
 void limits_go_home(uint8_t cycle_mask) 
 {
   if (sys.abort) { return; } // Block if system reset has been issued.
+
+#ifdef POLAR
+  if (bit_istrue(cycle_mask, bit(X_AXIS)) || bit_istrue(cycle_mask, bit(Y_AXIS))) {
+      float pos_x = settings.distance / 2;
+      float pos_y = settings.distance / 4;
+      sys_position[X_AXIS] = (sqrt((pos_x * pos_x)+(pos_y*pos_y))) * settings.steps_per_mm[X_AXIS];
+      sys_position[Y_AXIS] = (sqrt((settings.distance-pos_x)*(settings.distance-pos_x)+(pos_y*pos_y))) * settings.steps_per_mm[Y_AXIS];
+      return;
+  }
+#endif
 
   // Initialize plan data struct for homing motion. Spindle and coolant are disabled.
   plan_line_data_t plan_data;
@@ -361,7 +369,8 @@ void limits_go_home(uint8_t cycle_mask)
 
 // POLAR CONFIGURATION: a machine working with polar coordinates needs to now which is its position
 // at any time. Therefore we need to do the homing cycle in order to initialize the machine.
-#else 
+#ifdef foobar
+
 void limits_go_home(uint8_t cycle_mask)
 {
   if (sys.abort) { return; } // Block if system reset has been issued.

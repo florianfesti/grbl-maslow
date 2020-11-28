@@ -72,7 +72,7 @@ void mc_line(float *target, plan_line_data_t *pl_data)
     float x= settings.distance-target[X_AXIS];
     target_polar[X_AXIS]=sqrt(labs(target[X_AXIS]*target[X_AXIS]+target[Y_AXIS]*target[Y_AXIS]));
     target_polar[Y_AXIS]=sqrt(labs(x*x+target[Y_AXIS]*target[Y_AXIS]));
-    target_polar[Z_AXIS]=0.0;
+    target_polar[Z_AXIS]=target[Z_AXIS];
     plan_buffer_line(target_polar, pl_data);
 
     gc_state.position[X_AXIS]=target[X_AXIS];
@@ -296,13 +296,6 @@ void mc_homing_cycle(uint8_t cycle_mask)
   gc_sync_position();
   plan_sync_position();
 
-#ifdef POLAR
-  //TODO:put in settings
-  float offsetX=1000; //Desired initial position in cartessian coord's
-  float offsetY=-500;
-  gc_state.position[X_AXIS]=offsetX;
-  gc_state.position[Y_AXIS]=offsetY;
-#endif
   // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.
   limits_init();
 }

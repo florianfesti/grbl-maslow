@@ -301,7 +301,22 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
       pos = steps[idx]/settings.steps_per_mm[idx];
     }
   #else
+  #ifdef POLAR
+    if (idx==X_AXIS || idx==Y_AXIS) {
+	float x = steps[X_AXIS] / settings.steps_per_mm[X_AXIS];
+	float y = steps[Y_AXIS] / settings.steps_per_mm[Y_AXIS];
+	float angle = acos((settings.distance*settings.distance+x*x-y*y)/(2*settings.distance*x));
+	if (idx==X_AXIS) {
+	    pos = x*cos(angle);
+	} else {
+	    pos = x*sin(angle);
+	}
+    } else {
+	pos = steps[idx]/settings.steps_per_mm[idx];
+    }
+  #else
     pos = steps[idx]/settings.steps_per_mm[idx];
+  #endif
   #endif
   return(pos);
 }
