@@ -112,7 +112,7 @@ void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data
       float linear_per_segmentY = (target[Y_AXIS] - position[Y_AXIS])/segments;
 
       uint16_t i;
-	  for (i = 1; i<segments; i++) { // Increment (segments-1).
+	  for (i = 1; i<=segments; i++) { // Increment (segments-1).
 		// Update arc_target location
 		position[X_AXIS] += linear_per_segmentX;
 		position[Y_AXIS] += linear_per_segmentY;
