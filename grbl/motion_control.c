@@ -65,20 +65,6 @@ void mc_line(float *target, plan_line_data_t *pl_data)
   } while (1);
 
   // Plan and queue motion into planner buffer
-#ifdef POLAR
-
-    //Change from cartessian to polar coordinates
-    float target_polar[N_AXIS];
-    float x= settings.distance-target[X_AXIS];
-    target_polar[X_AXIS]=sqrt(labs(target[X_AXIS]*target[X_AXIS]+target[Y_AXIS]*target[Y_AXIS]));
-    target_polar[Y_AXIS]=sqrt(labs(x*x+target[Y_AXIS]*target[Y_AXIS]));
-    target_polar[Z_AXIS]=target[Z_AXIS];
-    plan_buffer_line(target_polar, pl_data);
-
-    gc_state.position[X_AXIS]=target[X_AXIS];
-    gc_state.position[Y_AXIS]=target[Y_AXIS];
-
-#else
   if (plan_buffer_line(target, pl_data) == PLAN_EMPTY_BLOCK) {
     if (bit_istrue(settings.flags,BITFLAG_LASER_MODE)) {
       // Correctly set spindle state, if there is a coincident position passed. Forces a buffer
@@ -88,7 +74,6 @@ void mc_line(float *target, plan_line_data_t *pl_data)
       }
     }
   }
-#endif
 }
 
 //Segment straight lines to ensure linear movement when the coordinates system is changed
