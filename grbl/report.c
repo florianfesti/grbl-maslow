@@ -528,6 +528,13 @@ void report_realtime_status()
   }
   report_util_axis_values(print_position);
 
+  #ifdef POLAR
+  printPgmString(PSTR("|RPos:"));
+  printFloat_CoordValue(sys_position[X_AXIS]/settings.steps_per_mm[X_AXIS]);
+  serial_write(',');
+  printFloat_CoordValue(sys_position[Y_AXIS]/settings.steps_per_mm[Y_AXIS]);
+  #endif
+
   // Returns planner and serial read buffer states.
   #ifdef REPORT_FIELD_BUFFER_STATE
     if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_BUFFER_STATE)) {
