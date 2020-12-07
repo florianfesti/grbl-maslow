@@ -350,12 +350,19 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
   } else {
       memcpy(position_steps, pl.position, sizeof(pl.position));
       #ifdef POLAR
+      /*
+      printString("pl.position ");
+      printFloat_CoordValue(pl.position[X_AXIS]);
+      printString("/");
+      printFloat_CoordValue(pl.position[Y_AXIS]);
+      printString("\n");
+      */
       memcpy(position_polar, pl.position, sizeof(pl.position));
-      position_polar[X_AXIS] = lround(sqrt(labs(pl.position[X_AXIS]*pl.position[X_AXIS]+pl.position[Y_AXIS]*pl.position[Y_AXIS])) *
-				      settings.steps_per_mm[X_AXIS]);
-      float x = settings.distance-pl.position[X_AXIS];
-      position_polar[Y_AXIS] = lround(sqrt(labs(x*x+pl.position[Y_AXIS]*pl.position[Y_AXIS])) *
-				      settings.steps_per_mm[Y_AXIS]);
+      float px = pl.position[X_AXIS];
+      float py = pl.position[Y_AXIS];
+      position_polar[X_AXIS] = lround(sqrt(px*px+py*py));
+      float x = (settings.distance*settings.steps_per_mm[X_AXIS])-pl.position[X_AXIS];
+      position_polar[Y_AXIS] = lround(sqrt(x*x+py*py));
       #endif
   }
 
@@ -377,7 +384,27 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     target_polar[Y_AXIS] = lround(sqrt(labs(x*x+target[Y_AXIS]*target[Y_AXIS])) *
 				  settings.steps_per_mm[Y_AXIS]);
     block->steps[X_AXIS] = target_polar[X_AXIS] - position_polar[X_AXIS];
-    block->steps[X_AXIS] = target_polar[X_AXIS] - position_polar[X_AXIS];
+    block->steps[Y_AXIS] = target_polar[Y_AXIS] - position_polar[Y_AXIS];
+    /*
+    printString(".\n");
+    printString("target_polar ");
+    printFloat_CoordValue(target_polar[X_AXIS]);
+    printString("/");
+    printFloat_CoordValue(target_polar[Y_AXIS]);
+    printString("\n");
+
+    printString("position_polar ");
+    printFloat_CoordValue(position_polar[X_AXIS]);
+    printString("/");
+    printFloat_CoordValue(position_polar[Y_AXIS]);
+    printString("\n");
+
+    printString("block_steps ");
+    printFloat_CoordValue(block->steps[X_AXIS]);
+    printString("/");
+    printFloat_CoordValue(block->steps[Y_AXIS]);
+    printString("\n");
+    /**/
   #endif
 
   for (idx=0; idx<N_AXIS; idx++) {
@@ -389,7 +416,6 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
         target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
         block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
       }
-      block->step_event_count = max(block->step_event_count, block->steps[idx]);
       if (idx == A_MOTOR) {
         delta_mm = (target_steps[X_AXIS]-position_steps[X_AXIS] + target_steps[Y_AXIS]-position_steps[Y_AXIS])/settings.steps_per_mm[idx];
       } else if (idx == B_MOTOR) {
@@ -400,21 +426,21 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     #else
     #ifdef POLAR
       if (idx == X_AXIS) {
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
+	  delta_mm = block->steps[idx] / settings.steps_per_mm[idx];
       } else if (idx == Y_AXIS) {
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
+	  delta_mm = block->steps[idx] / settings.steps_per_mm[idx];
       } else {
           target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
 	  block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
+	  delta_mm = block->steps[idx] / settings.steps_per_mm[idx];
       }
     #else
       target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
       block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
-      block->step_event_count = max(block->step_event_count, block->steps[idx]);
       delta_mm = (target_steps[idx] - position_steps[idx])/settings.steps_per_mm[idx];
     #endif
     #endif
+    block->step_event_count = max(block->step_event_count, block->steps[idx]);
     unit_vec[idx] = delta_mm; // Store unit vector numerator
 
     // Set direction bits. Bit enabled always means direction is negative.
@@ -525,6 +551,17 @@ void plan_sync_position()
 
   #ifdef POLAR
   system_convert_polar_to_steps(pl.position, sys_position);
+  /*
+  printString("pl.position ");
+  printFloat_CoordValue(pl.position[X_AXIS]);
+  printString("/");
+  printFloat_CoordValue(pl.position[Y_AXIS]);
+  printString("sys_position ");
+  printFloat_CoordValue(sys_position[X_AXIS]);
+  printString("/");
+  printFloat_CoordValue(sys_position[Y_AXIS]);
+  printString("\n");
+  */
   return;
   #endif
 

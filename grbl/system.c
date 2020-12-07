@@ -318,6 +318,13 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
     pos = steps[idx]/settings.steps_per_mm[idx];
   #endif
   #endif
+    /*
+  printString("steps to mpos ");
+  printFloat_CoordValue(idx);
+  printString(":");
+  printFloat_CoordValue(pos);
+  printString("\n");
+    */
   return(pos);
 }
 
@@ -347,17 +354,8 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
 #ifdef POLAR
 void system_convert_polar_to_steps(int32_t *steps, int32_t *polar)
 {
-    float x = polar[X_AXIS];
-    float y = polar[Y_AXIS];
-    float angle = acos((settings.distance*settings.distance+x*x-y*y)/(2*settings.distance*x));
     for (uint8_t idx=0; idx<N_AXIS; idx++) {
-	if (idx==X_AXIS) {
-	    steps[idx] = lround(x*cos(angle));
-	} else if (idx==Y_AXIS) {
-	    steps[idx] = lround(x*sin(angle));
-	} else {
-	    steps[idx] = polar[idx];
-	}
+	steps[idx] = system_convert_axis_steps_to_mpos(polar, idx) * settings.steps_per_mm[idx]; 
     }
 }
 #endif
