@@ -38,7 +38,11 @@
 // (1 minute)/feed_rate time.
 void mc_line(float *target, plan_line_data_t *pl_data);
 
-// Execute an arc in offset mode format. position == current xyz, target == target xyz,
+#ifdef SEGMENTED_LINES
+  void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data);
+#endif
+
+// Execute an arc in offset mode format. position == current xyz, target == target xyz, 
 // offset == offset from current xyz, axis_XXX defines circle plane in tool space, axis_linear is
 // the direction of helical travel, radius == circle radius, is_clockwise_arc boolean. Used
 // for vector transformation direction.

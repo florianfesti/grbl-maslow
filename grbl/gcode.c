@@ -1050,7 +1050,11 @@ uint8_t gc_execute_line(char *line)
     if (axis_command == AXIS_COMMAND_MOTION_MODE) {
       uint8_t gc_update_pos = GC_UPDATE_POS_TARGET;
       if (gc_state.modal.motion == MOTION_MODE_LINEAR) {
-        mc_line(gc_block.values.xyz, pl_data);
+#ifndef SEGMENTED_LINES
+	  mc_line(gc_block.values.xyz, pl_data);
+#else
+	  mc_segmented_line(gc_state.position, gc_block.values.xyz, pl_data);
+#endif
       } else if (gc_state.modal.motion == MOTION_MODE_SEEK) {
         pl_data->condition |= PL_COND_FLAG_RAPID_MOTION; // Set rapid motion condition flag.
         mc_line(gc_block.values.xyz, pl_data);

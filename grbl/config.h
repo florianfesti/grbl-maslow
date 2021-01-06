@@ -34,8 +34,31 @@
 // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only
 // one configuration file by placing their specific defaults and pin map at the bottom of this file.
 // If doing so, simply comment out these two defines and see instructions below.
-#define DEFAULTS_GENERIC
+
+/* If POLAR is enabled the coordinates of the machine movement are changed to polar.
+ * To active this feature is required to know the distance (d) between the two motors
+ * 		___d___
+		\     /       |
+	x_pol\   / y_pol  | y
+		  \ /         |
+	   ___ +
+ *	    x
+ */
+#define POLAR
+
+//Segment straight lines to ensure linear movement when the coordinates system is changed
+#define SEGMENTED_LINES
+
+//Spindle is controled by a servo.Use the PIN D11 to drive the servo. Use the commands M03 Sxxx (xxx between 0 and 255)
+//to rotate the servo between 0-180. The command M05 turn the servo to zero degrees.
+//#define RC_SERVO
+
+// Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
+//#define DEFAULTS_GENERIC
 #define CPU_MAP_ATMEGA328P // Arduino Uno CPU
+#define POLAR
+#define DEFAULTS_POLAR
+
 
 // Serial baud rate
 // #define BAUD_RATE 230400
@@ -102,8 +125,8 @@
 // on separate pin, but homed in one cycle. Also, it should be noted that the function of hard limits
 // will not be affected by pin sharing.
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.
-#define HOMING_CYCLE_0 (1<<Z_AXIS)                // REQUIRED: First move Z to clear workspace.
-#define HOMING_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // OPTIONAL: Then move X,Y at the same time.
+#define HOMING_CYCLE_0 (1<<X_AXIS)                // REQUIRED: First move Z to clear workspace.
+//#define HOMING_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // OPTIONAL: Then move X,Y at the same time.
 // #define HOMING_CYCLE_2                         // OPTIONAL: Uncomment and add axes mask to enable
 
 // NOTE: The following are two examples to setup homing for 2-axis machines.
@@ -164,8 +187,8 @@
 #define MESSAGE_PROBE_COORDINATES // Enabled by default. Comment to disable.
 
 // Enables a second coolant control pin via the mist coolant g-code command M7 on the Arduino Uno
-// analog pin 4. Only use this option if you require a second coolant control pin.
-// NOTE: The M8 flood coolant control pin on analog pin 3 will still be functional regardless.
+// analog pin 5. Only use this option if you require a second coolant control pin.
+// NOTE: The M8 flood coolant control pin on analog pin 4 will still be functional regardless.
 // #define ENABLE_M7 // Disabled by default. Uncomment to enable.
 
 // This option causes the feed hold input to act as a safety door switch. A safety door, when triggered,

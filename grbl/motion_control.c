@@ -76,6 +76,41 @@ void mc_line(float *target, plan_line_data_t *pl_data)
   }
 }
 
+//Segment straight lines to ensure linear movement when the coordinates system is changed
+#ifdef SEGMENTED_LINES
+void mc_segmented_line(float *position, float *target, plan_line_data_t *pl_data)
+{
+  float mm_per_line_segment=2;  //TODO: move to settings
+  float mm_of_travel = hypot(target[X_AXIS] - position[X_AXIS],
+		  target[Y_AXIS] - position[Y_AXIS]);
+  if (mm_of_travel < 0.001)  return;
+  uint16_t segments = floor(mm_of_travel / mm_per_line_segment) + 1;
+  if (segments) {
+      // Multiply inverse feed_rate to compensate for the fact that this movement is approximated
+      // by a number of discrete segments. The inverse feed_rate should be correct for the sum of
+      // all segments.
+      if (pl_data->condition & PL_COND_FLAG_INVERSE_TIME) {
+	  pl_data->feed_rate *= segments;
+      }
+
+      float linear_per_segmentX = (target[X_AXIS] - position[X_AXIS])/segments;
+      float linear_per_segmentY = (target[Y_AXIS] - position[Y_AXIS])/segments;
+
+      uint16_t i;
+	  for (i = 1; i<=segments; i++) { // Increment (segments-1).
+		// Update arc_target location
+		position[X_AXIS] += linear_per_segmentX;
+		position[Y_AXIS] += linear_per_segmentY;
+		mc_line(position, pl_data);
+		// Bail mid-circle on system abort. Runtime command check already performed by mc_line.
+		if (sys.abort) { return; }
+	  }
+  }
+}
+#endif
+
+
+
 
 // Execute an arc in offset mode format. position == current xyz, target == target xyz,
 // offset == offset from current xyz, axis_X defines circle plane in tool space, axis_linear is

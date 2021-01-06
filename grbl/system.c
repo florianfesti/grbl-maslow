@@ -301,7 +301,22 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
       pos = steps[idx]/settings.steps_per_mm[idx];
     }
   #else
+  #ifdef POLAR
+    if (idx==X_AXIS || idx==Y_AXIS) {
+	float x = steps[X_AXIS] / settings.steps_per_mm[X_AXIS];
+	float y = steps[Y_AXIS] / settings.steps_per_mm[Y_AXIS];
+	float angle = acos((settings.distance*settings.distance+x*x-y*y)/(2*settings.distance*x));
+	if (idx==X_AXIS) {
+	    pos = x*cos(angle);
+	} else {
+	    pos = x*sin(angle);
+	}
+    } else {
+	pos = steps[idx]/settings.steps_per_mm[idx];
+    }
+  #else
     pos = steps[idx]/settings.steps_per_mm[idx];
+  #endif
   #endif
   return(pos);
 }
@@ -327,6 +342,24 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
   {
     return( (steps[A_MOTOR] - steps[B_MOTOR])/2 );
   }
+#endif
+
+#ifdef POLAR
+void system_convert_polar_to_steps(int32_t *steps, int32_t *polar)
+{
+    float x = polar[X_AXIS];
+    float y = polar[Y_AXIS];
+    float angle = acos((settings.distance*settings.distance+x*x-y*y)/(2*settings.distance*x));
+    for (uint8_t idx=0; idx<N_AXIS; idx++) {
+	if (idx==X_AXIS) {
+	    steps[idx] = lround(x*cos(angle));
+	} else if (idx==Y_AXIS) {
+	    steps[idx] = lround(x*sin(angle));
+	} else {
+	    steps[idx] = polar[idx];
+	}
+    }
+}
 #endif
 
 

@@ -103,6 +103,10 @@ typedef struct {
   float rpm_max;
   float rpm_min;
 
+#ifdef POLAR
+  float distance; //Distance between motors
+#endif
+  
   uint8_t flags;  // Contains default boolean settings
 
   uint8_t homing_dir_mask;
