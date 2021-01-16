@@ -329,9 +329,6 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
   int32_t target_steps[N_AXIS], position_steps[N_AXIS];
   float unit_vec[N_AXIS], delta_mm;
   uint8_t idx;
-  #ifdef POLAR
-  int32_t position_polar[N_AXIS];
-  #endif
 
   // Copy position data based on type of motion being planned.
   if (block->condition & PL_COND_FLAG_SYSTEM_MOTION) { 
@@ -340,23 +337,10 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
       position_steps[Y_AXIS] = system_convert_corexy_to_y_axis_steps(sys_position);
       position_steps[Z_AXIS] = sys_position[Z_AXIS];
     #else
-    #ifdef POLAR
-      system_convert_polar_to_steps(position_steps, sys_position);
-      memcpy(position_polar, sys_position, sizeof(sys_position));
-    #else
       memcpy(position_steps, sys_position, sizeof(sys_position)); 
-    #endif
     #endif
   } else {
       memcpy(position_steps, pl.position, sizeof(pl.position));
-      #ifdef POLAR
-      memcpy(position_polar, pl.position, sizeof(pl.position));
-      position_polar[X_AXIS] = lround(sqrt(labs(pl.position[X_AXIS]*pl.position[X_AXIS]+pl.position[Y_AXIS]*pl.position[Y_AXIS])) *
-				      settings.steps_per_mm[X_AXIS]);
-      float x = settings.distance-pl.position[X_AXIS];
-      position_polar[Y_AXIS] = lround(sqrt(labs(x*x+pl.position[Y_AXIS]*pl.position[Y_AXIS])) *
-				      settings.steps_per_mm[Y_AXIS]);
-      #endif
   }
 
   #ifdef COREXY
@@ -367,17 +351,11 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
   #endif
   #ifdef POLAR
     //Change from cartessian to polar coordinates
-    target_steps[X_AXIS] = lround(target[X_AXIS]*settings.steps_per_mm[X_AXIS]);
-    target_steps[Y_AXIS] = lround(target[Y_AXIS]*settings.steps_per_mm[Y_AXIS]);
-    int32_t target_polar[N_AXIS];
-    float x = settings.distance-target[X_AXIS];
-    memcpy(target_polar, target, sizeof(target_polar));
-    target_polar[X_AXIS] = lround(sqrt(labs(target[X_AXIS]*target[X_AXIS]+target[Y_AXIS]*target[Y_AXIS])) *
-				  settings.steps_per_mm[X_AXIS]);
-    target_polar[Y_AXIS] = lround(sqrt(labs(x*x+target[Y_AXIS]*target[Y_AXIS])) *
-				  settings.steps_per_mm[Y_AXIS]);
-    block->steps[X_AXIS] = target_polar[X_AXIS] - position_polar[X_AXIS];
-    block->steps[X_AXIS] = target_polar[X_AXIS] - position_polar[X_AXIS];
+    float x = target[X_AXIS]*settings.steps_per_mm[X_AXIS];
+    float y = target[Y_AXIS]*settings.steps_per_mm[Y_AXIS];
+    target_steps[X_AXIS] = lround(sqrt(labs(x*x+y*y)));
+    x = settings.distance*settings.steps_per_mm[X_AXIS] - x;
+    target_steps[Y_AXIS] = lround(sqrt(labs(x*x+y*y)));
   #endif
 
   for (idx=0; idx<N_AXIS; idx++) {
@@ -399,21 +377,15 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
       }
     #else
     #ifdef POLAR
-      if (idx == X_AXIS) {
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
-      } else if (idx == Y_AXIS) {
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
-      } else {
-          target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
-	  block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
-	  delta_mm = target_steps[idx] / settings.steps_per_mm[idx];
+      if (idx != X_AXIS && idx != Y_AXIS) {
+	  target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
       }
     #else
       target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
+    #endif
       block->steps[idx] = labs(target_steps[idx]-position_steps[idx]);
       block->step_event_count = max(block->step_event_count, block->steps[idx]);
       delta_mm = (target_steps[idx] - position_steps[idx])/settings.steps_per_mm[idx];
-    #endif
     #endif
     unit_vec[idx] = delta_mm; // Store unit vector numerator
 
@@ -522,12 +494,6 @@ void plan_sync_position()
   // TODO: For motor configurations not in the same coordinate frame as the machine position,
   // this function needs to be updated to accomodate the difference.
   uint8_t idx;
-
-  #ifdef POLAR
-  system_convert_polar_to_steps(pl.position, sys_position);
-  return;
-  #endif
-
   for (idx=0; idx<N_AXIS; idx++) {
     #ifdef COREXY
       if (idx==X_AXIS) {
