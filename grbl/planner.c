@@ -297,6 +297,15 @@ void plan_update_velocity_profile_parameters()
   pl.previous_nominal_speed = prev_nominal_speed; // Update prev nominal speed for next incoming block.
 }
 
+void printCoords(char * name, long * steps)
+{
+  printString(name);
+  printString(": ");
+  printInteger(steps[X_AXIS]);
+  printString(" / ");
+  printInteger(steps[Y_AXIS]);
+  printString("\n");
+}
 
 /* Add a new linear movement to the buffer. target[N_AXIS] is the signed, absolute target position
    in millimeters. Feed rate specifies the speed of the motion. If feed rate is inverted, the feed
@@ -392,6 +401,12 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     // Set direction bits. Bit enabled always means direction is negative.
     if (delta_mm < 0.0 ) { block->direction_bits |= get_direction_pin_mask(idx); }
   }
+
+  /*
+  printCoords("position_steps", position_steps);
+  printCoords("target_steps", target_steps);
+  printCoords("Block", block->steps);
+  */
 
   // Bail if this is a zero-length block. Highly unlikely to occur.
   if (block->step_event_count == 0) { return(PLAN_EMPTY_BLOCK); }
