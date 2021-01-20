@@ -362,9 +362,9 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     //Change from cartessian to polar coordinates
     float x = target[X_AXIS]*settings.steps_per_mm[X_AXIS];
     float y = target[Y_AXIS]*settings.steps_per_mm[Y_AXIS];
-    target_steps[X_AXIS] = lround(sqrt(labs(x*x+y*y)));
+    target_steps[X_AXIS] = lround(sqrt(x*x+y*y));
     x = settings.distance*settings.steps_per_mm[X_AXIS] - x;
-    target_steps[Y_AXIS] = lround(sqrt(labs(x*x+y*y)));
+    target_steps[Y_AXIS] = lround(sqrt(x*x+y*y));
   #endif
 
   for (idx=0; idx<N_AXIS; idx++) {
